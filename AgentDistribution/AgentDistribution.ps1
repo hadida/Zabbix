@@ -5,7 +5,7 @@
 #  Distribution Zabbix agent among servers
 
 #  Author: 		Viktor Kucher
-#  Email:  		viktor.kucher@gmail.ua
+#  Email:  		viktor.kucher@gmail.com
 #  Date created:   	09/09/2015
 #  Version: 		1.0 
 #  Description: Distribution Zabbix agent among servers. Stop Zabbix agent service, copy file and start service
@@ -14,7 +14,8 @@
 $Servers = ''
 $server  = ''
 
-$Servers = ("MBX01", "MBX02", "DMS1", "DMS2", "ABS_SC3", "ABS_SC4", "SCBACK","SC_BACK" )
+#$Servers = ("MBX01", "MBX02", "DMS1", "DMS2", "ABS_SC3", "ABS_SC4", "SCBACK","SC_BACK" )
+$Servers = Get-Content -Path "d:\tmp\server2.csv"
 
 #############################################################################
 ## Parameters
@@ -48,7 +49,7 @@ foreach ( $server in $Servers)
 
                     write-host Processing: $server
                     Get-Service -ComputerName $server -Name $ServiceName | Stop-Service  
-
+					
 
                     ## Stopping service 
 
@@ -70,7 +71,8 @@ foreach ( $server in $Servers)
                             }
 
                     ## Copying file
-
+							if ($ServiceStatus -eq "Stopped")
+							{
                             $PathDestinationFolderFull = "\\" + $server + $PathDestinationFolder
                             $PathDestinationFileFull   = $PathDestinationFolderFull + '\' + $InstallFile
                             try
@@ -78,6 +80,7 @@ foreach ( $server in $Servers)
                                 if (Test-path -Path $PathDestinationFolderFull -ErrorAction Stop)
                                 {                                                                                
                                     Copy-Item -Path $PathInstallFileFull -Destination $PathDestinationFileFull -ErrorAction Stop
+									Write-Host On host $server agent was copied
                                 }
                                 else 
                                 {
@@ -89,7 +92,7 @@ foreach ( $server in $Servers)
                                 Write-Host  $Error[0].Exception.Message
                             }
     
-
+							}
 
                     ## Start service
                             Get-Service -ComputerName $server -Name $ServiceName | Start-Service  
